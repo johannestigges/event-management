@@ -1,4 +1,4 @@
-package de.tigges.eventmanagement.rest.users;
+package de.tigges.eventmanagement.rest.events;
 
 import java.util.Set;
 
@@ -12,43 +12,42 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.ResponseBody;
 import org.springframework.web.bind.annotation.RestController;
 
-import de.tigges.eventmanagement.rest.users.jpa.UserEntity;
-import de.tigges.eventmanagement.rest.users.jpa.UserRepository;
+import de.tigges.eventmanagement.rest.events.jpa.EventEntity;
+import de.tigges.eventmanagement.rest.events.jpa.EventRepository;
 import lombok.RequiredArgsConstructor;
 
 @RestController
-@RequestMapping("/rest/users")
+@RequestMapping("/rest/events")
 @RequiredArgsConstructor
-public class UserService {
-
-    private final UserRepository repository;
+public class EventService {
+    private final EventRepository repository;
 
     @GetMapping("")
-    Set<User> getAll() {
-        return UserMapper.mapEntities(repository.findAll());
+    Set<Event> getAll() {
+        return EventMapper.mapEntities(repository.findAll());
     }
 
     @GetMapping("/{id}")
-    User getOne(@PathVariable Long id) {
+    Event getOne(@PathVariable Long id) {
         return repository.findById(id)
-                .map(e -> UserMapper.mapEntity(e))
+                .map(e -> EventMapper.mapEntity(e))
                 .orElseThrow(() -> new RuntimeException());
     }
 
     @PostMapping("")
     @ResponseBody
-    User create(@RequestBody User user) {
-        UserEntity entity = UserMapper.map(user);
+    Event create(@RequestBody Event event) {
+        EventEntity entity = EventMapper.map(event);
         repository.save(entity);
-        return UserMapper.mapEntity(entity);
+        return EventMapper.mapEntity(entity);
     }
 
     @PutMapping("/{id}")
     @ResponseBody
-    User update(@RequestBody User user, @PathVariable Long id) {
-        UserEntity entity = UserMapper.map(user);
+    Event update(@RequestBody Event event, @PathVariable Long id) {
+        EventEntity entity = EventMapper.map(event);
         repository.save(entity);
-        return UserMapper.mapEntity(entity);
+        return EventMapper.mapEntity(entity);
     }
 
     @DeleteMapping("/{id}")
