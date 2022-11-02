@@ -14,6 +14,7 @@ import org.springframework.web.bind.annotation.RestController;
 
 import de.tigges.eventmanagement.rest.events.jpa.EventEntity;
 import de.tigges.eventmanagement.rest.events.jpa.EventRepository;
+import de.tigges.eventmanagement.rest.protocol.ProtocolService;
 import lombok.RequiredArgsConstructor;
 
 @RestController
@@ -21,6 +22,7 @@ import lombok.RequiredArgsConstructor;
 @RequiredArgsConstructor
 public class EventService {
     private final EventRepository repository;
+    private final ProtocolService protocolService;
 
     @GetMapping("")
     Set<Event> getAll() {
@@ -38,7 +40,8 @@ public class EventService {
     @ResponseBody
     Event create(@RequestBody Event event) {
         EventEntity entity = EventMapper.map(event);
-        repository.save(entity);
+        entity = repository.save(entity);
+        protocolService.newEntity(entity.getId(), "Event", entity);
         return EventMapper.mapEntity(entity);
     }
 
@@ -47,11 +50,14 @@ public class EventService {
     Event update(@RequestBody Event event, @PathVariable Long id) {
         EventEntity entity = EventMapper.map(event);
         repository.save(entity);
+        protocolService.modifiedEntity(entity.getId(), "Event", entity);
         return EventMapper.mapEntity(entity);
     }
 
     @DeleteMapping("/{id}")
     void delete(@PathVariable Long id) {
         repository.deleteById(id);
+        protocolService.deletedEntity(id, "Event");
+
     }
 }

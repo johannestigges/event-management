@@ -12,6 +12,7 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.ResponseBody;
 import org.springframework.web.bind.annotation.RestController;
 
+import de.tigges.eventmanagement.rest.protocol.ProtocolService;
 import de.tigges.eventmanagement.rest.users.jpa.UserEntity;
 import de.tigges.eventmanagement.rest.users.jpa.UserRepository;
 import lombok.RequiredArgsConstructor;
@@ -22,6 +23,7 @@ import lombok.RequiredArgsConstructor;
 public class UserService {
 
     private final UserRepository repository;
+    private final ProtocolService protocolService;
 
     @GetMapping("")
     Set<User> getAll() {
@@ -40,6 +42,7 @@ public class UserService {
     User create(@RequestBody User user) {
         UserEntity entity = UserMapper.map(user);
         repository.save(entity);
+        protocolService.newEntity(entity.getId(), "User", entity);
         return UserMapper.mapEntity(entity);
     }
 
@@ -48,11 +51,13 @@ public class UserService {
     User update(@RequestBody User user, @PathVariable Long id) {
         UserEntity entity = UserMapper.map(user);
         repository.save(entity);
+        protocolService.modifiedEntity(entity.getId(), "User", entity);
         return UserMapper.mapEntity(entity);
     }
 
     @DeleteMapping("/{id}")
     void delete(@PathVariable Long id) {
         repository.deleteById(id);
+        protocolService.deletedEntity(id, "User");
     }
 }
