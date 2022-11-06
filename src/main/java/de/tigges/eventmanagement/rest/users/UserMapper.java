@@ -19,7 +19,7 @@ public class UserMapper {
         user.setId(entity.getId());
         user.setVorname(entity.getVorname());
         user.setNachname(entity.getNachname());
-        user.setTyp(entity.getTyp());
+        user.setStatus(entity.getStatus());
         return user;
     }
 
@@ -28,7 +28,7 @@ public class UserMapper {
         entity.setId(user.getId());
         entity.setVorname(user.getVorname());
         entity.setNachname(user.getNachname());
-        entity.setTyp(user.getTyp());
+        entity.setStatus(user.getStatus());
         return entity;
     }
 }

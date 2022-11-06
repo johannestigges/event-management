@@ -7,5 +7,5 @@ public class User {
     Long id;
     String vorname;
     String nachname;
-    UserType typ;
+    UserStatus status;
 }

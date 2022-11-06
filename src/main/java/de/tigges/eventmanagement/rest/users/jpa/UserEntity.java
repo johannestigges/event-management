@@ -1,6 +1,6 @@
 package de.tigges.eventmanagement.rest.users.jpa;
 
-import de.tigges.eventmanagement.rest.users.UserType;
+import de.tigges.eventmanagement.rest.users.UserStatus;
 import jakarta.persistence.Entity;
 import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.GenerationType;
@@ -15,5 +15,5 @@ public class UserEntity {
     private Long id;
     private String vorname;
     private String nachname;
-    private UserType typ;
+    private UserStatus status;
 }
