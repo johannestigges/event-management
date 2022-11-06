@@ -1,22 +1,20 @@
 package de.tigges.eventmanagement.rest.events.jpa;
 
-import java.time.LocalDateTime;
-import java.util.ArrayList;
-import java.util.List;
-
+import jakarta.persistence.*;
 import org.hibernate.annotations.Cascade;
 import org.hibernate.annotations.CascadeType;
 
-import jakarta.persistence.Entity;
-import jakarta.persistence.FetchType;
-import jakarta.persistence.Id;
-import jakarta.persistence.OneToMany;
 import lombok.Data;
+
+import java.time.LocalDateTime;
+import java.util.ArrayList;
+import java.util.List;
 
 @Entity
 @Data
 public class EventEntity {
     @Id
+    @GeneratedValue (strategy = GenerationType.SEQUENCE)
     private Long id;
     private String name;
     private LocalDateTime start_event;
