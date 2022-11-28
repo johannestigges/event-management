@@ -2,3 +2,21 @@ logging:
   level:
     org.springframework.security.web: DEBUG
 
+event-magagement:
+  users:
+    - 
+      username: dacapo
+      password: "{bcrypt}$2a$10$Cf5rOfI9sqO7nnYKg8Y8JeeBvxn00X.TSYZw3VdP5OfZ6J0X6H3KC"
+      roles:
+        - USER
+    -
+      username: admin
+      password: "{bcrypt}$2a$10$Cf5rOfI9sqO7nnYKg8Y8JeeBvxn00X.TSYZw3VdP5OfZ6J0X6H3KC"
+      roles:
+        - ADMIN
+    -
+      username: johannes
+      password: "{bcrypt}$2a$10$Cf5rOfI9sqO7nnYKg8Y8JeeBvxn00X.TSYZw3VdP5OfZ6J0X6H3KC"
+      roles:
+        - ADMIN
+        - USER
