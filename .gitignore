@@ -34,3 +34,6 @@ build/
 
 ### Angular frontend ###
 src/main/resources/public/*
+
+### logs ###
+logs
