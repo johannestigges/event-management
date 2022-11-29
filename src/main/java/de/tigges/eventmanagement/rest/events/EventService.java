@@ -58,6 +58,5 @@ public class EventService {
     void delete(@PathVariable Long id) {
         repository.deleteById(id);
         protocolService.deletedEntity(id, "Event");
-
     }
 }

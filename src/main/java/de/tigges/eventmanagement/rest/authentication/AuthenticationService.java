@@ -24,8 +24,11 @@ public class AuthenticationService {
         if (authentication instanceof AnonymousAuthenticationToken || authentication == null) {
             throw new SessionAuthenticationException("no authentication context available");
         }
-        var roles = authentication.getAuthorities().stream().map(a -> a.getAuthority()).collect(Collectors.toSet());
-        return LoggedInUser.builder().name(authentication.getName())
+        var roles = authentication.getAuthorities().stream()
+            .map(a -> a.getAuthority())
+            .collect(Collectors.toSet());
+        return LoggedInUser.builder()
+                .name(authentication.getName())
                 .roles(roles)
                 .build();
     }
