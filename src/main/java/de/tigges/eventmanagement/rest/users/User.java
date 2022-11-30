@@ -8,4 +8,5 @@ public class User {
     String vorname;
     String nachname;
     UserStatus status;
+    Instrument instrument;
 }
