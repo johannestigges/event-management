@@ -18,12 +18,10 @@ import de.tigges.eventmanagement.rest.users.jpa.InstrumentRepository;
 import de.tigges.eventmanagement.rest.users.jpa.UserEntity;
 import de.tigges.eventmanagement.rest.users.jpa.UserRepository;
 import lombok.RequiredArgsConstructor;
-import lombok.extern.log4j.Log4j2;
 
 @RestController
 @RequestMapping("/rest/users")
 @RequiredArgsConstructor
-@Log4j2
 public class UserService {
 
     private final UserRepository userRepository;
@@ -51,7 +49,6 @@ public class UserService {
     @PostMapping("")
     @ResponseBody
     User create(@RequestBody User user) {
-        log.warn("create user {}", user.toString());
         UserEntity entity = UserMapper.map(user);
         userRepository.save(entity);
         protocolService.newEntity(entity.getId(), "User", entity);
@@ -61,7 +58,6 @@ public class UserService {
     @PutMapping("/{id}")
     @ResponseBody
     User update(@RequestBody User user, @PathVariable Long id) {
-        log.warn("update user {}", user.toString());
         UserEntity entity = UserMapper.map(user);
         userRepository.save(entity);
         protocolService.modifiedEntity(entity.getId(), "User", entity);
