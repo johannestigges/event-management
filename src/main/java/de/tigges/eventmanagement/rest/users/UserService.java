@@ -1,5 +1,6 @@
 package de.tigges.eventmanagement.rest.users;
 
+import java.util.List;
 import java.util.Set;
 
 import org.springframework.data.domain.Sort;
@@ -29,14 +30,14 @@ public class UserService {
     private final ProtocolService protocolService;
 
     @GetMapping("")
-    Set<User> getAll() {
-        return UserMapper.mapEntities(userRepository.selectAllWithInstruments(
-                Sort.by(Sort.Direction.ASC, "instrument")));
+    List<User> getAll() {
+        return UserMapper.mapEntities(userRepository.selectAllWithInstruments());
+                
     }
 
     @GetMapping("/instruments")
-    Set<Instrument> getInstruments() {
-        return UserMapper.mapInstruments(instrumentRepository.findAll());
+    List<Instrument> getInstruments() {
+        return UserMapper.mapInstruments(instrumentRepository.findAll(Sort.by(Sort.Direction.ASC,"id")));
     }
 
     @GetMapping("/{id}")

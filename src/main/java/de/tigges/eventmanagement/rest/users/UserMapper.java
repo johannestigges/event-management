@@ -1,20 +1,19 @@
 package de.tigges.eventmanagement.rest.users;
 
-import java.util.Set;
+import java.util.List;
 import java.util.stream.Collectors;
-import java.util.stream.StreamSupport;
 
 import de.tigges.eventmanagement.rest.users.jpa.InstrumentEntity;
 import de.tigges.eventmanagement.rest.users.jpa.UserEntity;
+import lombok.extern.log4j.Log4j2;
 
+@Log4j2
 public class UserMapper {
 
-    private static InstrumentEntity instrumentEntity;
-
-    public static Set<User> mapEntities(Iterable<UserEntity> entities) {
-        return StreamSupport.stream(entities.spliterator(), false)
+    public static List<User> mapEntities(List<UserEntity> entities) {
+        return entities.stream()
                 .map(e -> mapEntity(e))
-                .collect(Collectors.toSet());
+                .collect(Collectors.toList());
     }
 
     public static User mapEntity(UserEntity entity) {
@@ -37,10 +36,12 @@ public class UserMapper {
         return entity;
     }
 
-    public static Set<Instrument> mapInstruments(Iterable<InstrumentEntity> entities) {
-        return StreamSupport.stream(entities.spliterator(), false)
+    public static List<Instrument> mapInstruments(List<InstrumentEntity> entities) {
+        log.warn("Instruments: {}",
+                entities.stream().map(s -> Long.toString(s.getId())).collect(Collectors.joining(",")));
+        return entities.stream()
                 .map(i -> mapInstrument(i))
-                .collect(Collectors.toSet());
+                .collect(Collectors.toList());
     }
 
     private static Instrument mapInstrument(InstrumentEntity entity) {
@@ -58,7 +59,7 @@ public class UserMapper {
         if (instrument == null) {
             return null;
         }
-        instrumentEntity = new InstrumentEntity();
+        var instrumentEntity = new InstrumentEntity();
         instrumentEntity.setId(instrument.getId());
         instrumentEntity.setInstrument(instrument.getInstrument());
         instrumentEntity.setGruppe(instrument.getGruppe());
