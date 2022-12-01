@@ -5,9 +5,7 @@ import java.util.stream.Collectors;
 
 import de.tigges.eventmanagement.rest.users.jpa.InstrumentEntity;
 import de.tigges.eventmanagement.rest.users.jpa.UserEntity;
-import lombok.extern.log4j.Log4j2;
 
-@Log4j2
 public class UserMapper {
 
     public static List<User> mapEntities(List<UserEntity> entities) {
@@ -37,8 +35,6 @@ public class UserMapper {
     }
 
     public static List<Instrument> mapInstruments(List<InstrumentEntity> entities) {
-        log.warn("Instruments: {}",
-                entities.stream().map(s -> Long.toString(s.getId())).collect(Collectors.joining(",")));
         return entities.stream()
                 .map(i -> mapInstrument(i))
                 .collect(Collectors.toList());
