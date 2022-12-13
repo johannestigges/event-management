@@ -14,6 +14,8 @@ import org.springframework.web.bind.annotation.RestController;
 
 import de.tigges.eventmanagement.rest.events.jpa.EventEntity;
 import de.tigges.eventmanagement.rest.events.jpa.EventRepository;
+import de.tigges.eventmanagement.rest.events.jpa.ParticipantEntity;
+import de.tigges.eventmanagement.rest.events.jpa.ParticipantRepository;
 import de.tigges.eventmanagement.rest.protocol.ProtocolService;
 import lombok.RequiredArgsConstructor;
 
@@ -22,6 +24,7 @@ import lombok.RequiredArgsConstructor;
 @RequiredArgsConstructor
 public class EventService {
     private final EventRepository repository;
+    private final ParticipantRepository participantRepository;
     private final ProtocolService protocolService;
 
     @GetMapping("")
@@ -32,7 +35,7 @@ public class EventService {
     @GetMapping("/{id}")
     Event getOne(@PathVariable Long id) {
         return repository.findById(id)
-                .map(e -> EventMapper.mapEntity(e))
+                .map(e -> EventMapper.mapEntity(e,true))
                 .orElseThrow(() -> new RuntimeException());
     }
 
@@ -42,7 +45,7 @@ public class EventService {
         EventEntity entity = EventMapper.map(event);
         entity = repository.save(entity);
         protocolService.newEntity(entity.getId(), "Event", entity);
-        return EventMapper.mapEntity(entity);
+        return EventMapper.mapEntity(entity,true);
     }
 
     @PutMapping("/{id}")
@@ -51,12 +54,19 @@ public class EventService {
         EventEntity entity = EventMapper.map(event);
         repository.save(entity);
         protocolService.modifiedEntity(entity.getId(), "Event", entity);
-        return EventMapper.mapEntity(entity);
+        return EventMapper.mapEntity(entity,true);
     }
 
     @DeleteMapping("/{id}")
     void delete(@PathVariable Long id) {
         repository.deleteById(id);
         protocolService.deletedEntity(id, "Event");
+    }
+
+    @PutMapping("/participants/{id}")
+    void updateParticipant(@RequestBody Participant participant, @PathVariable Long id) {
+        ParticipantEntity entity = EventMapper.map(participant);
+        participantRepository.save(entity);
+        protocolService.modifiedEntity(id, null, entity);
     }
 }

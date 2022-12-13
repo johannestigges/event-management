@@ -7,58 +7,57 @@ import de.tigges.eventmanagement.rest.users.jpa.InstrumentEntity;
 import de.tigges.eventmanagement.rest.users.jpa.UserEntity;
 
 public class UserMapper {
+  public static List<User> mapEntities(List<UserEntity> entities) {
+    return entities.stream()
+        .map(UserMapper::mapEntity)
+        .collect(Collectors.toList());
+  }
 
-    public static List<User> mapEntities(List<UserEntity> entities) {
-        return entities.stream()
-                .map(e -> mapEntity(e))
-                .collect(Collectors.toList());
-    }
+  public static User mapEntity(UserEntity entity) {
+    return entity == null
+        ? null
+        : User.builder()
+            .id(entity.getId())
+            .vorname(entity.getVorname())
+            .nachname(entity.getNachname())
+            .status(entity.getStatus())
+            .instrument(mapInstrument(entity.getInstrument()))
+            .build();
+  }
 
-    public static User mapEntity(UserEntity entity) {
-        var user = new User();
-        user.setId(entity.getId());
-        user.setVorname(entity.getVorname());
-        user.setNachname(entity.getNachname());
-        user.setStatus(entity.getStatus());
-        user.setInstrument(mapInstrument(entity.getInstrument()));
-        return user;
-    }
+  public static UserEntity map(User user) {
+    return user == null
+        ? null
+        : new UserEntity()
+            .setId(user.getId())
+            .setVorname(user.getVorname())
+            .setNachname(user.getNachname())
+            .setStatus(user.getStatus())
+            .setInstrument(mapInstrument(user.getInstrument()));
+  }
 
-    public static UserEntity map(User user) {
-        var entity = new UserEntity();
-        entity.setId(user.getId());
-        entity.setVorname(user.getVorname());
-        entity.setNachname(user.getNachname());
-        entity.setStatus(user.getStatus());
-        entity.setInstrument(mapInstrument(user.getInstrument()));
-        return entity;
-    }
+  public static List<Instrument> mapInstruments(List<InstrumentEntity> entities) {
+    return entities.stream()
+        .map(i -> mapInstrument(i))
+        .collect(Collectors.toList());
+  }
 
-    public static List<Instrument> mapInstruments(List<InstrumentEntity> entities) {
-        return entities.stream()
-                .map(i -> mapInstrument(i))
-                .collect(Collectors.toList());
-    }
+  private static Instrument mapInstrument(InstrumentEntity entity) {
+    return entity == null
+        ? null
+        : Instrument.builder()
+            .id(entity.getId())
+            .instrument(entity.getInstrument())
+            .gruppe(entity.getGruppe())
+            .build();
+  }
 
-    private static Instrument mapInstrument(InstrumentEntity entity) {
-        if (entity == null) {
-            return null;
-        }
-        return Instrument.builder()
-                .id(entity.getId())
-                .instrument(entity.getInstrument())
-                .gruppe(entity.getGruppe())
-                .build();
-    }
-
-    private static InstrumentEntity mapInstrument(Instrument instrument) {
-        if (instrument == null) {
-            return null;
-        }
-        var instrumentEntity = new InstrumentEntity();
-        instrumentEntity.setId(instrument.getId());
-        instrumentEntity.setInstrument(instrument.getInstrument());
-        instrumentEntity.setGruppe(instrument.getGruppe());
-        return instrumentEntity;
-    }
+  private static InstrumentEntity mapInstrument(Instrument instrument) {
+    return instrument == null
+        ? null
+        : new InstrumentEntity()
+            .setId(instrument.getId())
+            .setInstrument(instrument.getInstrument())
+            .setGruppe(instrument.getGruppe());
+  }
 }
