@@ -53,7 +53,7 @@ public class UserRepository {
 
     User update(User user) {
         if (jdbcTemplate.update("UPDATE ev_user SET vorname =? , nachname = ?, status = ?, version = ? WHERE id = ? AND version = ?",
-                user.getVorname(), user.getNachname(), user.getStatus(), user.getVersion() + 1,
+                user.getVorname(), user.getNachname(), user.getStatus().toString(), user.getVersion() + 1,
                 user.getId(), user.getVersion()) != 1) {
             throw new OptimisticLockingFailureException("Fehler beim Aktualisieren von user " + user);
         }

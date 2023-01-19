@@ -9,12 +9,11 @@ import java.time.LocalDateTime;
 
 @Data
 @Builder
-@Table("EV_PROTOCOL")
+@Table("ev_protocol")
 public class Protocol {
 
     @Id
     Long id;
-
     private LocalDateTime createdAt;
     private ProtocolType type;
 
