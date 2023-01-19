@@ -1,0 +1,15 @@
+spring: 
+  datasource:
+    url: jdbc:h2:file:./eventmanagement.db
+    driverClassName: org.h2.Driver
+    username: sa
+    password: sa
+  h2:
+    console:
+      enabled: true
+
+flyway:
+  url: jdbc:h2:file:./eventmanagement.db
+  schemas: PUBLIC
+  user: sa
+  password: sa

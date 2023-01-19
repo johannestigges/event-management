@@ -7,6 +7,7 @@ import lombok.Data;
 @Builder
 public class User {
     Long id;
+    Long version;
     String vorname;
     String nachname;
     UserStatus status;

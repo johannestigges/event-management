@@ -1,15 +1,11 @@
 package de.tigges.eventmanagement.rest.protocol;
 
-import java.time.LocalDateTime;
-
+import com.fasterxml.jackson.core.JsonProcessingException;
+import lombok.RequiredArgsConstructor;
 import org.springframework.http.converter.json.Jackson2ObjectMapperBuilder;
 import org.springframework.stereotype.Service;
 
-import com.fasterxml.jackson.core.JsonProcessingException;
-
-import de.tigges.eventmanagement.rest.protocol.jpa.ProtocolEntity;
-import de.tigges.eventmanagement.rest.protocol.jpa.ProtocolRepository;
-import lombok.RequiredArgsConstructor;
+import java.time.LocalDateTime;
 
 @Service
 @RequiredArgsConstructor
@@ -31,13 +27,13 @@ public class ProtocolService {
     }
 
     private void protocol(Long entityId, String entityType, Object data, ProtocolType type) {
-        var entity = new ProtocolEntity();
-        entity.setEntityId(entityId);
-        entity.setEntityType(entityType);
-        entity.setCreatedAt(LocalDateTime.now());
-        entity.setType(type);
-        entity.setData(deserialize(data));
-        repository.save(entity);
+        repository.save(Protocol.builder()
+                .entityId(entityId)
+                .entityType(entityType)
+                .createdAt(LocalDateTime.now())
+                .type(type)
+                .data(deserialize(data))
+                .build());
     }
 
     private String deserialize(Object data) {
@@ -49,5 +45,4 @@ public class ProtocolService {
             throw new RuntimeException(e);
         }
     }
-
 }
