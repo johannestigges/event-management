@@ -1,72 +1,84 @@
 package de.tigges.eventmanagement.rest.events;
 
-import java.util.Set;
-
-import org.springframework.web.bind.annotation.DeleteMapping;
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.PathVariable;
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.PutMapping;
-import org.springframework.web.bind.annotation.RequestBody;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.ResponseBody;
-import org.springframework.web.bind.annotation.RestController;
-
-import de.tigges.eventmanagement.rest.events.jpa.EventEntity;
-import de.tigges.eventmanagement.rest.events.jpa.EventRepository;
-import de.tigges.eventmanagement.rest.events.jpa.ParticipantEntity;
-import de.tigges.eventmanagement.rest.events.jpa.ParticipantRepository;
 import de.tigges.eventmanagement.rest.protocol.ProtocolService;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.log4j.Log4j2;
+import org.springframework.web.bind.annotation.*;
+
+import java.util.List;
 
 @RestController
 @RequestMapping("/rest/events")
 @RequiredArgsConstructor
+@Log4j2
 public class EventService {
     private final EventRepository repository;
     private final ParticipantRepository participantRepository;
     private final ProtocolService protocolService;
 
     @GetMapping("")
-    Set<Event> getAll() {
-        return EventMapper.mapEntities(repository.findAll());
+    public List<Event> getAll() {
+        var events = repository.findAll();
+        events.forEach(this::addParticipants);
+        return events;
     }
 
     @GetMapping("/{id}")
-    Event getOne(@PathVariable Long id) {
-        return repository.findById(id)
-                .map(e -> EventMapper.mapEntity(e,true))
-                .orElseThrow(() -> new RuntimeException());
+    public Event getOne(@PathVariable Long id) {
+        var event = repository.findById(id).orElseThrow(RuntimeException::new);
+        addParticipants(event);
+        return event;
     }
 
     @PostMapping("")
     @ResponseBody
-    Event create(@RequestBody Event event) {
-        EventEntity entity = EventMapper.map(event);
-        entity = repository.save(entity);
-        protocolService.newEntity(entity.getId(), "Event", entity);
-        return EventMapper.mapEntity(entity,true);
+    public Event create(@RequestBody Event event) {
+        var dbEvent = repository.insert(event);
+        event.getParticipants().forEach(p -> {
+            participantRepository.insert(dbEvent.getId(), p.getUser_id(), p.getParticipate());
+            dbEvent.getParticipants().add(Participant.builder()
+                    .event_id(dbEvent.getId())
+                    .user_id(p.getUser_id())
+                    .participate(p.getParticipate())
+                    .build());
+        });
+        protocolService.newEntity(dbEvent.getId(), "Event", dbEvent);
+        return dbEvent;
     }
 
     @PutMapping("/{id}")
     @ResponseBody
-    Event update(@RequestBody Event event, @PathVariable Long id) {
-        EventEntity entity = EventMapper.map(event);
-        repository.save(entity);
-        protocolService.modifiedEntity(entity.getId(), "Event", entity);
-        return EventMapper.mapEntity(entity,true);
+    public Event update(@RequestBody Event event, @PathVariable Long id) {
+        var dbEvent = repository.findByIdAndVersion(event.getId(), event.getVersion())
+                .orElseThrow(RuntimeException::new);
+        final Event savedEvent = repository.update(event);
+        participantRepository.removeFromEvent(event.getId());
+        event.getParticipants().forEach(p -> {
+            participantRepository.insert(event.getId(), p.getUser_id(), p.getParticipate());
+            savedEvent.getParticipants().add(Participant.builder()
+                    .event_id(event.getId())
+                    .user_id(p.getUser_id())
+                    .participate(p.getParticipate())
+                    .build());
+        });
+        protocolService.modifiedEntity(event.getId(), "Event", savedEvent);
+        return savedEvent;
     }
 
     @DeleteMapping("/{id}")
-    void delete(@PathVariable Long id) {
+    public void delete(@PathVariable Long id) {
+        participantRepository.removeFromEvent(id);
         repository.deleteById(id);
         protocolService.deletedEntity(id, "Event");
     }
 
     @PutMapping("/participants/{id}")
-    void updateParticipant(@RequestBody Participant participant, @PathVariable Long id) {
-        ParticipantEntity entity = EventMapper.map(participant);
-        participantRepository.save(entity);
-        protocolService.modifiedEntity(id, null, entity);
+    public void updateParticipant(@RequestBody Participant participant, @PathVariable Long id) {
+        participantRepository.update(participant.getEvent_id(), participant.getUser_id(), participant.getParticipate());
+        protocolService.modifiedEntity(id, "Participant", participant);
+    }
+
+    private void addParticipants(Event event) {
+        event.getParticipants().addAll(participantRepository.findByEventId(event.getId()));
     }
 }

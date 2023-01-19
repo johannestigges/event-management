@@ -1,24 +1,11 @@
 package de.tigges.eventmanagement.rest.users;
 
-import java.util.List;
-import java.util.Set;
-
-import org.springframework.data.domain.Sort;
-import org.springframework.web.bind.annotation.DeleteMapping;
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.PathVariable;
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.PutMapping;
-import org.springframework.web.bind.annotation.RequestBody;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.ResponseBody;
-import org.springframework.web.bind.annotation.RestController;
-
+import de.tigges.eventmanagement.rest.events.ParticipantRepository;
 import de.tigges.eventmanagement.rest.protocol.ProtocolService;
-import de.tigges.eventmanagement.rest.users.jpa.InstrumentRepository;
-import de.tigges.eventmanagement.rest.users.jpa.UserEntity;
-import de.tigges.eventmanagement.rest.users.jpa.UserRepository;
 import lombok.RequiredArgsConstructor;
+import org.springframework.web.bind.annotation.*;
+
+import java.util.List;
 
 @RestController
 @RequestMapping("/rest/users")
@@ -27,46 +14,44 @@ public class UserService {
 
     private final UserRepository userRepository;
     private final InstrumentRepository instrumentRepository;
+
+    private final ParticipantRepository participantRepository;
     private final ProtocolService protocolService;
 
     @GetMapping("")
-    List<User> getAll() {
-        return UserMapper.mapEntities(userRepository.selectAllWithInstruments());
-                
+    public List<User> getAll() {
+        return userRepository.selectAllWithInstruments();
     }
 
     @GetMapping("/instruments")
-    List<Instrument> getInstruments() {
-        return UserMapper.mapInstruments(instrumentRepository.findAll(Sort.by(Sort.Direction.ASC,"id")));
+    public List<Instrument> getInstruments() {
+        return instrumentRepository.findAll();
     }
 
     @GetMapping("/{id}")
-    User getOne(@PathVariable Long id) {
-        return userRepository.findOneWithInstrument(id)
-                .map(e -> UserMapper.mapEntity(e))
-                .orElseThrow(() -> new RuntimeException());
+    public User getOne(@PathVariable Long id) {
+        return userRepository.findUserWithInstrument(id).orElseThrow(RuntimeException::new);
     }
 
     @PostMapping("")
     @ResponseBody
-    User create(@RequestBody User user) {
-        UserEntity entity = UserMapper.map(user);
-        userRepository.save(entity);
-        protocolService.newEntity(entity.getId(), "User", entity);
-        return UserMapper.mapEntity(entity);
+    public User create(@RequestBody User user) {
+        var savedUser = userRepository.insert(user);
+        protocolService.newEntity(savedUser.getId(), "User", savedUser);
+        return savedUser;
     }
 
     @PutMapping("/{id}")
     @ResponseBody
-    User update(@RequestBody User user, @PathVariable Long id) {
-        UserEntity entity = UserMapper.map(user);
-        userRepository.save(entity);
-        protocolService.modifiedEntity(entity.getId(), "User", entity);
-        return UserMapper.mapEntity(entity);
+    public User update(@RequestBody User user, @PathVariable Long id) {
+        var savedUser = userRepository.update(user);
+        protocolService.modifiedEntity(savedUser.getId(), "User", savedUser);
+        return savedUser;
     }
 
     @DeleteMapping("/{id}")
-    void delete(@PathVariable Long id) {
+    public void delete(@PathVariable Long id) {
+        participantRepository.removeFromUser(id);
         userRepository.deleteById(id);
         protocolService.deletedEntity(id, "User");
     }

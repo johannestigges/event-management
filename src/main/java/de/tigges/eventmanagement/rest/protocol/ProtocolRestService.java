@@ -1,12 +1,11 @@
 package de.tigges.eventmanagement.rest.protocol;
 
-import java.util.Set;
+import lombok.RequiredArgsConstructor;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
-import de.tigges.eventmanagement.rest.protocol.jpa.ProtocolRepository;
-import lombok.RequiredArgsConstructor;
+import java.util.List;
 
 @RestController
 @RequestMapping("/rest/protocol")
@@ -16,7 +15,7 @@ public class ProtocolRestService {
     private final ProtocolRepository protocolRepository;
 
     @GetMapping("")
-    public Set<Protocol> getAll() {
-        return ProtocolMapper.map(protocolRepository.findAll());
+    public List<Protocol> getAll() {
+        return protocolRepository.findAllByOrderByCreatedAt();
     }
 }

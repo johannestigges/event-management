@@ -8,5 +8,6 @@ import lombok.Data;
 public class Participant {
     private Long event_id;
     private Long user_id;
+
     private Boolean participate;
 }

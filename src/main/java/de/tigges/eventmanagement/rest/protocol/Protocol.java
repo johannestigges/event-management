@@ -1,11 +1,19 @@
 package de.tigges.eventmanagement.rest.protocol;
 
+import lombok.Builder;
+import lombok.Data;
+import org.springframework.data.annotation.Id;
+import org.springframework.data.relational.core.mapping.Table;
+
 import java.time.LocalDateTime;
 
-import lombok.Data;
-
 @Data
+@Builder
+@Table("EV_PROTOCOL")
 public class Protocol {
+
+    @Id
+    Long id;
 
     private LocalDateTime createdAt;
     private ProtocolType type;
