@@ -10,6 +10,7 @@ import lombok.Data;
 @Builder
 public class Event {
     private Long id;
+    private Long version;
     private String name;
     private LocalDateTime start;
     private LocalDateTime end;
