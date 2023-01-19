@@ -1,0 +1,10 @@
+spring: 
+  datasource:
+    url: "jdbc:postgresql://localhost:5432/dacapo"
+    username: dacapo
+    password: knofensa
+flyway:
+  url: "jdbc:postgresql://localhost:5432/dacapo"
+  schemas: dacapo
+  user: dacapo
+  password: knofensa
