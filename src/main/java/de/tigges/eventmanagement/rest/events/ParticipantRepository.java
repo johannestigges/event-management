@@ -22,7 +22,7 @@ public class ParticipantRepository {
 
     public int update(Long eventId, Long userId, Boolean participate) {
         return jdbcTemplate.update("UPDATE ev_participant SET participate = ? where event_id = ? and user_id = ?",
-                eventId, userId, participate);
+                participate, eventId, userId);
     }
 
     public List<Participant> findByEventId(long eventId) {
