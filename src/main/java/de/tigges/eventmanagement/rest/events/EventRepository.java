@@ -21,7 +21,7 @@ public class EventRepository {
     private final JdbcTemplate jdbcTemplate;
 
     List<Event> findAll() {
-        return  jdbcTemplate.query("SELECT * from ev_event", new EventMapper());
+        return jdbcTemplate.query("SELECT * from ev_event order by start_at asc", new EventMapper());
     }
 
     Optional<Event> findByIdAndVersion(Long id, Long version) {
@@ -29,6 +29,7 @@ public class EventRepository {
                 "SELECT * from ev_event WHERE id = ? AND version = ?",
                 new EventMapper(), id, version));
     }
+
     Optional<Event> findById(Long id) {
         return Optional.ofNullable(jdbcTemplate.queryForObject(
                 "SELECT * from ev_event WHERE id = ?",
@@ -50,7 +51,7 @@ public class EventRepository {
 
     Event update(Event event) {
         if (jdbcTemplate.update("UPDATE ev_event SET name =? , start_at = ?, end_at = ?, version = ? WHERE id = ? AND version = ?",
-                event.getName(),event.getStart(),event.getEnd(),event.getVersion() + 1,
+                event.getName(), event.getStart(), event.getEnd(), event.getVersion() + 1,
                 event.getId(), event.getVersion()) != 1) {
             throw new OptimisticLockingFailureException("Fehler beim Aktualisieren von event " + event);
         }
