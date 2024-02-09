@@ -9,6 +9,7 @@ import org.springframework.context.annotation.Configuration;
 import org.springframework.http.HttpStatus;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.config.annotation.web.configuration.EnableWebSecurity;
+import org.springframework.security.config.annotation.web.configurers.AbstractHttpConfigurer;
 import org.springframework.security.core.AuthenticationException;
 import org.springframework.security.core.userdetails.User;
 import org.springframework.security.core.userdetails.UserDetails;
@@ -31,17 +32,16 @@ public class SecurityConfig {
     @Bean
     public SecurityFilterChain filterChain(HttpSecurity http) throws Exception {
         return http
-                .formLogin()
-                .loginPage("/#/login")
-                .loginProcessingUrl("/login")
-                .defaultSuccessUrl("/")
-                .failureHandler(new AppAuthenticationFailureHandler())
-                .and()
+                .formLogin(formLogin -> formLogin
+                        .loginPage("/#/login")
+                        .loginProcessingUrl("/login")
+                        .defaultSuccessUrl("/")
+                        .failureHandler(new AppAuthenticationFailureHandler()))
                 .authorizeHttpRequests(requests ->
                         requests.requestMatchers(new AntPathRequestMatcher("/")).permitAll()
                                 .requestMatchers(new AntPathRequestMatcher("/rest/**")).authenticated()
                                 .anyRequest().permitAll())
-                .csrf().disable()
+                .csrf(AbstractHttpConfigurer::disable)
                 .build();
     }
 
@@ -55,9 +55,9 @@ public class SecurityConfig {
 
     private static UserDetails map(UserData user) {
         return User.builder()
-                .username(user.getUsername())
-                .password(user.getPassword())
-                .roles(user.getRoles())
+                .username(user.username())
+                .password(user.password())
+                .roles(user.roles())
                 .build();
     }
 

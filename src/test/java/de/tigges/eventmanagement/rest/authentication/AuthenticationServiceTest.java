@@ -23,11 +23,11 @@ class AuthenticationServiceTest {
     void getLoggedInUser() {
         initAuthentication("username", "role1", "role2", "role3");
         var loggedinUser = new AuthenticationService().getLoggedInUser();
-        assertEquals(3, loggedinUser.getRoles().size());
-        assertTrue(loggedinUser.getRoles().contains("role1"));
-        assertTrue(loggedinUser.getRoles().contains("role2"));
-        assertTrue(loggedinUser.getRoles().contains("role2"));
-        assertEquals("username", loggedinUser.getName());
+        assertEquals(3, loggedinUser.roles().size());
+        assertTrue(loggedinUser.roles().contains("role1"));
+        assertTrue(loggedinUser.roles().contains("role2"));
+        assertTrue(loggedinUser.roles().contains("role2"));
+        assertEquals("username", loggedinUser.name());
     }
 
     @Test
@@ -54,7 +54,7 @@ class AuthenticationServiceTest {
         when(authentication.getAuthorities()).thenReturn((Collection) createRoles(roles));
     }
 
-    private Collection<? extends GrantedAuthority> createRoles(String... roles) {
+    private Collection<GrantedAuthority> createRoles(String... roles) {
         return Stream.of(roles).map(SimpleGrantedAuthority::new).collect(Collectors.toList());
     }
 }

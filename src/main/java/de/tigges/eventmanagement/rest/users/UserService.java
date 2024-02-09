@@ -14,7 +14,6 @@ public class UserService {
 
     private final UserRepository userRepository;
     private final InstrumentRepository instrumentRepository;
-
     private final ParticipantRepository participantRepository;
     private final ProtocolService protocolService;
 

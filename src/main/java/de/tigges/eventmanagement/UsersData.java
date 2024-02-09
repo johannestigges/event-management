@@ -10,10 +10,6 @@ import org.springframework.context.annotation.Configuration;
 public class UsersData {
     private UserData[] users;
 
-    @Data
-    public static class UserData {
-        private String username;
-        private String password;
-        private String[] roles;
+    record UserData(String username, String password, String[] roles) {
     }
 }

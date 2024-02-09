@@ -18,12 +18,10 @@ public class ProtocolService {
 
     public void modifiedEntity(Long entityId, String entityType, Object data) {
         protocol(entityId, entityType, data, ProtocolType.UPDATE);
-
     }
 
     public void deletedEntity(Long entityId, String entityType) {
         protocol(entityId, entityType, null, ProtocolType.DELETE);
-
     }
 
     private void protocol(Long entityId, String entityType, Object data, ProtocolType type) {

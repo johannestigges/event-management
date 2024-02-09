@@ -21,13 +21,13 @@ public class UserRepository {
 
     public List<User> selectAllWithInstruments() {
         return jdbcTemplate.query(
-                "SELECT * FROM ev_user u LEFT JOIN ev_instrument i on i.id = u.instrument_id ORDER BY u.instrument_id",
+                "SELECT * FROM ev_user u LEFT JOIN ev_instrument i ON i.id = u.instrument_id ORDER BY u.instrument_id",
                 new UserMapper(true));
     }
 
     public Optional<User> findUserWithInstrument(Long id) {
         return Optional.ofNullable(jdbcTemplate.queryForObject(
-                "SELECT * FROM ev_user u LEFT JOIN ev_instrument i on i.id = u.instrument_id WHERE u.id = ?",
+                "SELECT * FROM ev_user u LEFT JOIN ev_instrument i ON i.id = u.instrument_id WHERE u.id = ?",
                 new UserMapper(true), id));
     }
 
@@ -41,9 +41,9 @@ public class UserRepository {
         parameters.put("nachname", user.getNachname());
         parameters.put("status", user.getStatus());
         if (user.getInstrument() != null) {
-            parameters.put("instrument_id", user.getInstrument().getId());
+            parameters.put("instrument_id", user.getInstrument().id());
         }
-        Number id = insert.executeAndReturnKey(parameters);
+        var id = insert.executeAndReturnKey(parameters);
         return findUserWithInstrument(id.longValue()).orElseThrow(RuntimeException::new);
     }
 
@@ -52,11 +52,15 @@ public class UserRepository {
     }
 
     User update(User user) {
-        if (jdbcTemplate.update("UPDATE ev_user "
-                        + "SET vorname =? , nachname =?, status =?, instrument_id =?, version =?"
-                        + " WHERE id =? AND version =?",
-                user.getVorname(), user.getNachname(), user.getStatus().toString(), user.getInstrument().getId(), user.getVersion() + 1,
-                user.getId(), user.getVersion()) != 1) {
+        if (jdbcTemplate.update(
+                "UPDATE ev_user SET vorname = ?, nachname = ?, status = ?, instrument_id = ?, version = ? WHERE id = ? AND version = ?",
+                user.getVorname(),
+                user.getNachname(),
+                user.getStatus().toString(),
+                user.getInstrument().id(),
+                user.getVersion() + 1,
+                user.getId(),
+                user.getVersion()) != 1) {
             throw new OptimisticLockingFailureException("Fehler beim Aktualisieren von user " + user);
         }
         return findUserWithInstrument(user.getId()).orElseThrow(RuntimeException::new);
@@ -76,11 +80,11 @@ public class UserRepository {
                     .status(UserStatus.valueOf(rs.getString("status")))
                     .build();
             if (withInstrument) {
-                user.setInstrument(Instrument.builder()
-                        .id(rs.getLong("instrument_id"))
-                        .instrument(rs.getString("instrument"))
-                        .gruppe(rs.getString("gruppe"))
-                        .build());
+                user.setInstrument(new Instrument(
+                        rs.getLong("instrument_id"),
+                        rs.getString("instrument"),
+                        rs.getString("gruppe")));
+
             }
             return user;
         }

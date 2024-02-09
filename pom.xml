@@ -5,12 +5,12 @@
     <parent>
         <groupId>org.springframework.boot</groupId>
         <artifactId>spring-boot-starter-parent</artifactId>
-        <version>3.0.5</version>
+        <version>3.2.1</version>
         <relativePath/> <!-- lookup parent from repository -->
     </parent>
     <groupId>de.tigges</groupId>
     <artifactId>event-management</artifactId>
-    <version>0.9.2</version>
+    <version>1.0.0</version>
     <name>event-management</name>
     <description>Backend for Event Management System</description>
     <properties>
