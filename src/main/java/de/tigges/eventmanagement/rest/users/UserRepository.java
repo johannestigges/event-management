@@ -37,11 +37,11 @@ public class UserRepository {
                 .usingGeneratedKeyColumns("id");
         var parameters = new HashMap<String, Object>();
         parameters.put("version", 0);
-        parameters.put("vorname", user.getVorname());
-        parameters.put("nachname", user.getNachname());
-        parameters.put("status", user.getStatus());
-        if (user.getInstrument() != null) {
-            parameters.put("instrument_id", user.getInstrument().id());
+        parameters.put("vorname", user.vorname());
+        parameters.put("nachname", user.nachname());
+        parameters.put("status", user.status());
+        if (user.instrument() != null) {
+            parameters.put("instrument_id", user.instrument().id());
         }
         var id = insert.executeAndReturnKey(parameters);
         return findUserWithInstrument(id.longValue()).orElseThrow(RuntimeException::new);
@@ -54,16 +54,16 @@ public class UserRepository {
     User update(User user) {
         if (jdbcTemplate.update(
                 "UPDATE ev_user SET vorname = ?, nachname = ?, status = ?, instrument_id = ?, version = ? WHERE id = ? AND version = ?",
-                user.getVorname(),
-                user.getNachname(),
-                user.getStatus().toString(),
-                user.getInstrument().id(),
-                user.getVersion() + 1,
-                user.getId(),
-                user.getVersion()) != 1) {
+                user.vorname(),
+                user.nachname(),
+                user.status().toString(),
+                user.instrument().id(),
+                user.version() + 1,
+                user.id(),
+                user.version()) != 1) {
             throw new OptimisticLockingFailureException("Fehler beim Aktualisieren von user " + user);
         }
-        return findUserWithInstrument(user.getId()).orElseThrow(RuntimeException::new);
+        return findUserWithInstrument(user.id()).orElseThrow(RuntimeException::new);
     }
 
     @RequiredArgsConstructor
@@ -72,21 +72,20 @@ public class UserRepository {
         private final boolean withInstrument;
 
         public User mapRow(ResultSet rs, int rowNum) throws SQLException {
-            var user = User.builder()
-                    .id(rs.getLong("id"))
-                    .version(rs.getLong("version"))
-                    .vorname(rs.getString("vorname"))
-                    .nachname(rs.getString("nachname"))
-                    .status(UserStatus.valueOf(rs.getString("status")))
-                    .build();
-            if (withInstrument) {
-                user.setInstrument(new Instrument(
-                        rs.getLong("instrument_id"),
-                        rs.getString("instrument"),
-                        rs.getString("gruppe")));
+            return new User(
+                    rs.getLong("id"),
+                    rs.getLong("version"),
+                    rs.getString("vorname"),
+                    rs.getString("nachname"),
+                    UserStatus.valueOf(rs.getString("status")),
+                    withInstrument ? mapInstrument(rs) : null);
+        }
 
-            }
-            return user;
+        private Instrument mapInstrument(ResultSet rs) throws SQLException {
+            return new Instrument(
+                    rs.getLong("instrument_id"),
+                    rs.getString("instrument"),
+                    rs.getString("gruppe"));
         }
     }
 }

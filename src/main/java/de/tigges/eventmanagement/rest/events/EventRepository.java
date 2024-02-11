@@ -22,13 +22,13 @@ public class EventRepository {
 
     List<Event> findAll() {
         return jdbcTemplate.query(
-                "SELECT * FROM ev_event ORDER BY start_at asc ",
+                "SELECT * FROM ev_event ORDER BY start_at asc",
                 new EventMapper());
     }
 
     Optional<Event> findByIdAndVersion(Long id, Long version) {
         return Optional.ofNullable(jdbcTemplate.queryForObject(
-                "SELECT * FROM ev_event WHERE id = ? AND version = ? ",
+                "SELECT * FROM ev_event WHERE id = ? AND version = ?",
                 new EventMapper(), id, version));
     }
 

@@ -18,7 +18,9 @@ public class EventService {
 
     @GetMapping("")
     public List<Event> getAll() {
-        return eventRepository.findAll().stream().map(this::addParticipants).toList();
+        return eventRepository.findAll().stream()
+                .map(this::addParticipants)
+                .toList();
     }
 
     @GetMapping("/{id}")

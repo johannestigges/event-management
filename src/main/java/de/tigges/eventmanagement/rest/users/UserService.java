@@ -24,19 +24,20 @@ public class UserService {
 
     @GetMapping("/instruments")
     public List<Instrument> getInstruments() {
-        return instrumentRepository.findAll();
+        return instrumentRepository.findAllByOrderByIdAsc();
     }
 
     @GetMapping("/{id}")
     public User getOne(@PathVariable Long id) {
-        return userRepository.findUserWithInstrument(id).orElseThrow(RuntimeException::new);
+        return userRepository.findUserWithInstrument(id)
+                .orElseThrow(RuntimeException::new);
     }
 
     @PostMapping("")
     @ResponseBody
     public User create(@RequestBody User user) {
         var savedUser = userRepository.insert(user);
-        protocolService.newEntity(savedUser.getId(), "User", savedUser);
+        protocolService.newEntity(savedUser.id(), "User", savedUser);
         return savedUser;
     }
 
@@ -44,7 +45,7 @@ public class UserService {
     @ResponseBody
     public User update(@RequestBody User user, @PathVariable Long id) {
         var savedUser = userRepository.update(user);
-        protocolService.modifiedEntity(savedUser.getId(), "User", savedUser);
+        protocolService.modifiedEntity(savedUser.id(), "User", savedUser);
         return savedUser;
     }
 

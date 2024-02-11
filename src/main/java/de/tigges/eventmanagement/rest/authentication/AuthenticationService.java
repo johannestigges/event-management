@@ -19,19 +19,34 @@ public class AuthenticationService {
 
     @GetMapping("/me")
     LoggedInUser getLoggedInUser() {
-        var authentication = SecurityContextHolder.getContext().getAuthentication();
-        if (authentication instanceof AnonymousAuthenticationToken || authentication == null) {
+        return createLoggedinUser(getAuthentication());
+    }
+
+    private static Authentication getAuthentication() {
+        return assertAuthenticated(SecurityContextHolder.getContext().getAuthentication());
+    }
+
+    private static Authentication assertAuthenticated(Authentication authentication) {
+        if (isNotAuthenticated(authentication)) {
             throw new SessionAuthenticationException("no authentication context available");
         }
+        return authentication;
+    }
+
+    private static boolean isNotAuthenticated(Authentication authentication) {
+        return authentication instanceof AnonymousAuthenticationToken || authentication == null;
+    }
+
+    private static LoggedInUser createLoggedinUser(Authentication authentication) {
         return new LoggedInUser(authentication.getName(), getRoles(authentication));
     }
 
-    private Set<String> getRoles(Authentication authentication) {
+    private static Set<String> getRoles(Authentication authentication) {
         return authentication.getAuthorities().stream()
                 .map(GrantedAuthority::getAuthority)
-                .collect(Collectors.toSet());
+                .collect(Collectors.toUnmodifiableSet());
     }
 
-    record LoggedInUser(String name, Collection<String> roles) {
+    public record LoggedInUser(String name, Collection<String> roles) {
     }
 }
