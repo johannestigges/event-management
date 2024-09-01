@@ -1,10 +1,18 @@
 package de.tigges.eventmanagement.rest.users;
 
+import de.tigges.eventmanagement.rest.protocol.Protocollable;
+import org.springframework.data.relational.core.mapping.Table;
+
+@Table(name = "EV_USER")
 public record User(
         Long id,
         Long version,
         String vorname,
         String nachname,
         UserStatus status,
-        Instrument instrument) {
+        Instrument instrument) implements Protocollable {
+    @Override
+    public String protocolName() {
+        return "User";
+    }
 }

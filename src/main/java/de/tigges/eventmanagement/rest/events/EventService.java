@@ -2,15 +2,17 @@ package de.tigges.eventmanagement.rest.events;
 
 import de.tigges.eventmanagement.rest.protocol.ProtocolService;
 import lombok.RequiredArgsConstructor;
-import lombok.extern.log4j.Log4j2;
+import org.springframework.dao.DuplicateKeyException;
+import org.springframework.dao.EmptyResultDataAccessException;
+import org.springframework.dao.OptimisticLockingFailureException;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
+import java.util.Optional;
 
 @RestController
 @RequestMapping("/rest/events")
 @RequiredArgsConstructor
-@Log4j2
 public class EventService {
     private final EventRepository eventRepository;
     private final ParticipantRepository participantRepository;
@@ -18,70 +20,100 @@ public class EventService {
 
     @GetMapping("")
     public List<Event> getAll() {
-        return eventRepository.findAll().stream()
+        return eventRepository.findAllByOrderByStartAtAsc().stream()
                 .map(this::addParticipants)
                 .toList();
     }
 
     @GetMapping("/{id}")
     public Event getOne(@PathVariable Long id) {
-        var event = eventRepository.findById(id).orElseThrow(RuntimeException::new);
-        return addParticipants(event);
+        return eventRepository.findById(id)
+                .map(this::addParticipants)
+                .orElseThrow(() -> new EmptyResultDataAccessException(
+                        "event with id %s not found".formatted(id), 1));
     }
 
     @PostMapping("")
     @ResponseBody
-    public Event create(@RequestBody Event event) {
-        var dbEvent = eventRepository.insert(event);
-        var participants = event.participants().stream()
-                .peek(p -> participantRepository.insert(dbEvent.id(), p.user_id(), p.participate()))
-                .map(p -> new Participant(dbEvent.id(), p.user_id(), p.participate()))
-                .toList();
-        var result = new Event(dbEvent, participants);
-        protocolService.newEntity(result.id(), "Event", result);
-        return result;
+    public Event insert(@RequestBody Event event) {
+        return Optional.of(event)
+                .map(this::assertNew)
+                .map(eventRepository::save)
+                .map(savedEvent -> insertParticipants(savedEvent, event.participants()))
+                .map(protocolService::newEntity)
+                .orElseThrow();
     }
 
-    @PutMapping("/{id}")
+    @PutMapping("")
     @ResponseBody
-    public Event update(@RequestBody Event event, @PathVariable Long id) {
-        var dbEvent = eventRepository.findByIdAndVersion(event.id(), event.version())
-                .orElseThrow(RuntimeException::new);
-        final Event savedEvent = eventRepository.update(event);
-
-        participantRepository.removeFromEvent(event.id());
-        var participants = event.participants().stream()
-                .peek(p -> participantRepository.insert(event.id(), p.user_id(), p.participate()))
-                .map(p -> new Participant(event.id(), p.user_id(), p.participate()))
-                .toList();
-        var result = new Event(dbEvent, participants);
-        protocolService.modifiedEntity(result.id(), "Event", result);
-        return result;
+    public Event update(@RequestBody Event event) {
+        return Optional.of(event)
+                .map(this::assertEventVersion)
+                .map(eventRepository::save)
+                .map(this::updateParticipants)
+                .map(protocolService::modifiedEntity)
+                .orElseThrow();
     }
 
     @DeleteMapping("/{id}")
     public void delete(@PathVariable Long id) {
+        var entity = eventRepository.findById(id)
+                .orElseThrow(() -> new EmptyResultDataAccessException(
+                        "event with id %d does not exist".formatted(id), 1));
         participantRepository.removeFromEvent(id);
         eventRepository.deleteById(id);
-        protocolService.deletedEntity(id, "Event");
+        protocolService.deletedEntity(entity);
     }
 
     @PutMapping("/participants/{id}")
     public void updateParticipant(@RequestBody Participant participant, @PathVariable Long id) {
-        participantRepository.update(participant.event_id(), participant.user_id(), participant.participate());
-        protocolService.modifiedEntity(id, "Participant", participant);
+        updateParticipant(participant);
+        protocolService.modifiedEntity(participant);
     }
 
-    public Event updateParticipants(Event event) {
+    private Event updateParticipants(Event event) {
         participantRepository.removeFromEvent(event.id());
-        var participants = event.participants().stream()
-                .peek(p -> participantRepository.insert(event.id(), p.user_id(), p.participate()))
-                .map(p -> new Participant(event.id(), p.user_id(), p.participate()))
-                .toList();
-        return new Event(event, participants);
+        event.participants().forEach(this::insertParticipant);
+        return event;
+    }
+
+    private Event insertParticipants(Event event, List<Participant> participants) {
+        return new Event(event, participants.stream()
+                .map(p -> insertParticipant(event.id(), p.user_id(), p.participate()))
+                .toList());
+    }
+
+    private void insertParticipant(Participant participant) {
+        insertParticipant(participant.event_id(), participant.user_id(), participant.participate());
+    }
+
+    private Participant insertParticipant(long eventId, long userId, boolean participate) {
+        participantRepository.insert(eventId, userId, participate);
+        return new Participant(eventId, userId, participate);
+    }
+
+    private void updateParticipant(Participant participant) {
+        participantRepository.update(
+                participant.event_id(),
+                participant.user_id(),
+                participant.participate());
     }
 
     private Event addParticipants(Event event) {
         return new Event(event, participantRepository.findByEventId(event.id()));
+    }
+
+    private Event assertEventVersion(Event event) {
+        eventRepository.findByIdAndVersion(event.id(), event.version()).orElseThrow(() -> new OptimisticLockingFailureException("cannot find event %s with id %d in version %d".formatted(event.name(), event.id(), event.version())));
+        return event;
+    }
+
+    private Event assertNew(Event event) {
+        if (event.id() != null && event.id() > 0) {
+            throw new DuplicateKeyException(
+                    "Event %s with id %d already exists"
+                            .formatted(event.name(), event.id()));
+        }
+        return event;
     }
 }

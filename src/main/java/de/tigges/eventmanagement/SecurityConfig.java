@@ -4,6 +4,7 @@ import de.tigges.eventmanagement.UsersData.UserData;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import lombok.RequiredArgsConstructor;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.http.HttpStatus;
@@ -27,7 +28,11 @@ import java.util.stream.Collectors;
 @RequiredArgsConstructor
 public class SecurityConfig {
 
+    private static final int ONE_YEAR_IN_SECONDS = 31_536_000;
     private final UsersData usersData;
+
+    @Value("${login.remember-me.key}")
+    private String rememberMeKey;
 
     @Bean
     public SecurityFilterChain filterChain(HttpSecurity http) throws Exception {
@@ -42,6 +47,10 @@ public class SecurityConfig {
                                 .requestMatchers(new AntPathRequestMatcher("/rest/**")).authenticated()
                                 .anyRequest().permitAll())
                 .csrf(AbstractHttpConfigurer::disable)
+                .rememberMe(rememberMe -> rememberMe
+                        .key(rememberMeKey)
+                        .alwaysRemember(true)
+                        .tokenValiditySeconds(ONE_YEAR_IN_SECONDS))
                 .build();
     }
 

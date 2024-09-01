@@ -1,23 +1,25 @@
-spring: 
+spring:
   datasource:
     url: jdbc:h2:mem:test
     driverClassName: org.h2.Driver
     username: sa
     password: sa
-    
+
   h2:
     console:
       enabled: false
 
-event-magagement:
+login:
+  remember-me:
+    key: "vwdfcjanq[wo  34hqjvn;"
+
+event-management:
   users:
-    - 
-      username: dacapo
+    - username: dacapo
       password: "{bcrypt}$2a$10$Cf5rOfI9sqO7nnYKg8Y8JeeBvxn00X.TSYZw3VdP5OfZ6J0X6H3KC"
       roles:
         - USER
-    -
-      username: admin
+    - username: admin
       password: "{bcrypt}$2a$10$Cf5rOfI9sqO7nnYKg8Y8JeeBvxn00X.TSYZw3VdP5OfZ6J0X6H3KC"
       roles:
         - ADMIN

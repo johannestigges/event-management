@@ -3,6 +3,7 @@ package de.tigges.eventmanagement.rest.users;
 import de.tigges.eventmanagement.rest.events.ParticipantRepository;
 import de.tigges.eventmanagement.rest.protocol.ProtocolService;
 import lombok.RequiredArgsConstructor;
+import org.springframework.dao.EmptyResultDataAccessException;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
@@ -27,26 +28,24 @@ public class UserService {
         return instrumentRepository.findAllByOrderByIdAsc();
     }
 
+
     @GetMapping("/{id}")
     public User getOne(@PathVariable Long id) {
         return userRepository.findUserWithInstrument(id)
-                .orElseThrow(RuntimeException::new);
+                .orElseThrow(() -> new EmptyResultDataAccessException(
+                        "User with id %s not found".formatted(id), 1));
     }
 
     @PostMapping("")
     @ResponseBody
     public User create(@RequestBody User user) {
-        var savedUser = userRepository.insert(user);
-        protocolService.newEntity(savedUser.id(), "User", savedUser);
-        return savedUser;
+        return protocolService.newEntity(userRepository.insert(user));
     }
 
     @PutMapping("/{id}")
     @ResponseBody
     public User update(@RequestBody User user, @PathVariable Long id) {
-        var savedUser = userRepository.update(user);
-        protocolService.modifiedEntity(savedUser.id(), "User", savedUser);
-        return savedUser;
+        return protocolService.modifiedEntity(userRepository.update(user));
     }
 
     @DeleteMapping("/{id}")

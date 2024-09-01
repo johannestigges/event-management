@@ -12,12 +12,19 @@ import java.time.LocalDateTime;
 public class ProtocolService {
     private final ProtocolRepository repository;
 
-    public void newEntity(Long entityId, String entityType, Object data) {
-        protocol(entityId, entityType, data, ProtocolType.CREATE);
+    public <T extends Protocollable> T newEntity(T data) {
+        protocol(data.id(), data.protocolName(), data, ProtocolType.CREATE);
+        return data;
     }
 
-    public void modifiedEntity(Long entityId, String entityType, Object data) {
-        protocol(entityId, entityType, data, ProtocolType.UPDATE);
+    public <T extends Protocollable> T modifiedEntity(T data) {
+        protocol(data.id(), data.protocolName(), data, ProtocolType.UPDATE);
+        return data;
+    }
+
+    public <T extends Protocollable> T deletedEntity(T data) {
+        protocol(data.id(), data.protocolName(), data, ProtocolType.DELETE);
+        return data;
     }
 
     public void deletedEntity(Long entityId, String entityType) {
@@ -25,19 +32,12 @@ public class ProtocolService {
     }
 
     private void protocol(Long entityId, String entityType, Object data, ProtocolType type) {
-        repository.save(Protocol.builder()
-                .entityId(entityId)
-                .entityType(entityType)
-                .createdAt(LocalDateTime.now())
-                .type(type)
-                .data(deserialize(data))
-                .build());
+        repository.save(Protocol.builder().entityId(entityId).entityType(entityType).createdAt(LocalDateTime.now()).type(type).data(deserialize(data)).build());
     }
 
     private String deserialize(Object data) {
+        if (data == null) return null;
         try {
-            if (data == null)
-                return null;
             return Jackson2ObjectMapperBuilder.json().build().writeValueAsString(data);
         } catch (JsonProcessingException e) {
             throw new RuntimeException(e);
