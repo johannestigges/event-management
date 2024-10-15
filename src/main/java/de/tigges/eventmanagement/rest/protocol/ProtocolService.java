@@ -32,11 +32,23 @@ public class ProtocolService {
     }
 
     private void protocol(Long entityId, String entityType, Object data, ProtocolType type) {
-        repository.save(Protocol.builder().entityId(entityId).entityType(entityType).createdAt(LocalDateTime.now()).type(type).data(deserialize(data)).build());
+        repository.save(createProtocol(entityId, entityType, data, type));
+    }
+
+    private Protocol createProtocol(Long entityId, String entityType, Object data, ProtocolType type) {
+        return Protocol.builder()
+                .entityId(entityId)
+                .entityType(entityType)
+                .createdAt(LocalDateTime.now())
+                .type(type)
+                .data(deserialize(data))
+                .build();
     }
 
     private String deserialize(Object data) {
-        if (data == null) return null;
+        if (data == null) {
+            return null;
+        }
         try {
             return Jackson2ObjectMapperBuilder.json().build().writeValueAsString(data);
         } catch (JsonProcessingException e) {

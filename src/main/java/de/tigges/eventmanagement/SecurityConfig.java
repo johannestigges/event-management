@@ -11,6 +11,9 @@ import org.springframework.http.HttpStatus;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.config.annotation.web.configuration.EnableWebSecurity;
 import org.springframework.security.config.annotation.web.configurers.AbstractHttpConfigurer;
+import org.springframework.security.config.annotation.web.configurers.AuthorizeHttpRequestsConfigurer;
+import org.springframework.security.config.annotation.web.configurers.FormLoginConfigurer;
+import org.springframework.security.config.annotation.web.configurers.RememberMeConfigurer;
 import org.springframework.security.core.AuthenticationException;
 import org.springframework.security.core.userdetails.User;
 import org.springframework.security.core.userdetails.UserDetails;
@@ -20,6 +23,7 @@ import org.springframework.security.web.SecurityFilterChain;
 import org.springframework.security.web.authentication.AuthenticationFailureHandler;
 import org.springframework.security.web.util.matcher.AntPathRequestMatcher;
 
+import java.time.Duration;
 import java.util.Arrays;
 import java.util.stream.Collectors;
 
@@ -28,29 +32,45 @@ import java.util.stream.Collectors;
 @RequiredArgsConstructor
 public class SecurityConfig {
 
-    private static final int ONE_YEAR_IN_SECONDS = 31_536_000;
+    private static final Duration TOKEN_VALIDITY = Duration.ofDays(365);
+
     private final UsersData usersData;
 
     @Value("${login.remember-me.key}")
     private String rememberMeKey;
 
+    private static void requestConfig(AuthorizeHttpRequestsConfigurer<HttpSecurity>.AuthorizationManagerRequestMatcherRegistry requests) {
+        requests
+                .requestMatchers(new AntPathRequestMatcher("/rest/**")).authenticated()
+                .anyRequest().permitAll();
+    }
+
+    private static void formLoginConfiguration(FormLoginConfigurer<HttpSecurity> formLogin) {
+        formLogin
+                .loginPage("/#/login")
+                .loginProcessingUrl("/login")
+                .defaultSuccessUrl("/")
+                .failureHandler(new AppAuthenticationFailureHandler());
+    }
+
+    private static UserDetails map(UserData user) {
+        return User.builder()
+                .username(user.username())
+                .password(user.password())
+                .roles(user.roles())
+                .build();
+    }
+
+    private static int toSeconds(Duration duration) {
+        return Long.valueOf(duration.getSeconds()).intValue();
+    }
+
     @Bean
     public SecurityFilterChain filterChain(HttpSecurity http) throws Exception {
-        return http
-                .formLogin(formLogin -> formLogin
-                        .loginPage("/#/login")
-                        .loginProcessingUrl("/login")
-                        .defaultSuccessUrl("/")
-                        .failureHandler(new AppAuthenticationFailureHandler()))
-                .authorizeHttpRequests(requests ->
-                        requests.requestMatchers(new AntPathRequestMatcher("/")).permitAll()
-                                .requestMatchers(new AntPathRequestMatcher("/rest/**")).authenticated()
-                                .anyRequest().permitAll())
+        return http.formLogin(SecurityConfig::formLoginConfiguration)
+                .authorizeHttpRequests(SecurityConfig::requestConfig)
                 .csrf(AbstractHttpConfigurer::disable)
-                .rememberMe(rememberMe -> rememberMe
-                        .key(rememberMeKey)
-                        .alwaysRemember(true)
-                        .tokenValiditySeconds(ONE_YEAR_IN_SECONDS))
+                .rememberMe(this::rememberMeConfiguration)
                 .build();
     }
 
@@ -62,18 +82,19 @@ public class SecurityConfig {
                         .collect(Collectors.toSet()));
     }
 
-    private static UserDetails map(UserData user) {
-        return User.builder()
-                .username(user.username())
-                .password(user.password())
-                .roles(user.roles())
-                .build();
+    private void rememberMeConfiguration(RememberMeConfigurer<HttpSecurity> rememberMe) {
+        rememberMe
+                .key(rememberMeKey)
+                .alwaysRemember(true)
+                .tokenValiditySeconds(toSeconds(TOKEN_VALIDITY));
     }
 
     private static class AppAuthenticationFailureHandler implements AuthenticationFailureHandler {
         @Override
         public void onAuthenticationFailure(
-                HttpServletRequest request, HttpServletResponse response, AuthenticationException exception) {
+                HttpServletRequest request,
+                HttpServletResponse response,
+                AuthenticationException exception) {
             response.setStatus(HttpStatus.UNAUTHORIZED.value());
         }
     }
