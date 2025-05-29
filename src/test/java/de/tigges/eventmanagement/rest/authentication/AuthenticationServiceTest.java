@@ -7,13 +7,14 @@ import org.springframework.security.core.GrantedAuthority;
 import org.springframework.security.core.authority.SimpleGrantedAuthority;
 import org.springframework.security.core.context.SecurityContext;
 import org.springframework.security.core.context.SecurityContextHolder;
-import org.springframework.security.web.authentication.session.SessionAuthenticationException;
 
 import java.util.Collection;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
-import static org.junit.jupiter.api.Assertions.*;
+import static org.assertj.core.api.Assertions.assertThat;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
 
@@ -31,18 +32,22 @@ class AuthenticationServiceTest {
     }
 
     @Test
-    void throwExceptionWithoutAuthentication() {
-        var exception = assertThrows(SessionAuthenticationException.class, () -> new AuthenticationService().getLoggedInUser());
-        assertEquals("no authentication context available", exception.getMessage());
+    void returnAnonymousWithoutAuthentication() {
+        var loggedInUser = new AuthenticationService().getLoggedInUser();
+        assertThat(loggedInUser.name()).isEmpty();
+        assertThat(loggedInUser.roles()).isEmpty();
     }
 
     @Test
-    void throwExceptionWithAnonymousAuthenticationToken() {
+    void anonymousAuthenticationToken() {
         var ctx = mock(SecurityContext.class);
         SecurityContextHolder.setContext(ctx);
         when(ctx.getAuthentication()).thenReturn(mock(AnonymousAuthenticationToken.class));
-        var exception = assertThrows(SessionAuthenticationException.class, () -> new AuthenticationService().getLoggedInUser());
-        assertEquals("no authentication context available", exception.getMessage());
+
+        var loggedInUser = new AuthenticationService().getLoggedInUser();
+
+        assertThat(loggedInUser.name()).isEmpty();
+        assertThat(loggedInUser.roles()).isEmpty();
     }
 
     private void initAuthentication(String username, String... roles) {

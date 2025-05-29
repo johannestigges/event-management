@@ -3,7 +3,7 @@ package de.tigges.eventmanagement.rest.users;
 import de.tigges.eventmanagement.rest.protocol.Protocollable;
 import org.springframework.data.relational.core.mapping.Table;
 
-@Table(name = "EV_USER")
+@Table(name = "ev_user")
 public record User(
         Long id,
         Long version,

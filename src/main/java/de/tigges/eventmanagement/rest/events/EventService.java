@@ -50,7 +50,7 @@ public class EventService {
         return Optional.of(event)
                 .map(this::assertEventVersion)
                 .map(eventRepository::save)
-                .map(this::updateParticipants)
+                .map(savedEvent -> this.updateParticipants(savedEvent, event.participants()))
                 .map(protocolService::modifiedEntity)
                 .orElseThrow();
     }
@@ -71,20 +71,15 @@ public class EventService {
         protocolService.modifiedEntity(participant);
     }
 
-    private Event updateParticipants(Event event) {
+    private Event updateParticipants(Event event, List<Participant> participants) {
         participantRepository.removeFromEvent(event.id());
-        event.participants().forEach(this::insertParticipant);
-        return event;
+        return insertParticipants(event, participants);
     }
 
     private Event insertParticipants(Event event, List<Participant> participants) {
         return new Event(event, participants.stream()
                 .map(p -> insertParticipant(event.id(), p.user_id(), p.participate()))
                 .toList());
-    }
-
-    private void insertParticipant(Participant participant) {
-        insertParticipant(participant.event_id(), participant.user_id(), participant.participate());
     }
 
     private Participant insertParticipant(long eventId, long userId, boolean participate) {

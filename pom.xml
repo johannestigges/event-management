@@ -5,12 +5,12 @@
     <parent>
         <groupId>org.springframework.boot</groupId>
         <artifactId>spring-boot-starter-parent</artifactId>
-        <version>3.3.3</version>
+        <version>3.4.4</version>
         <relativePath/>
     </parent>
     <groupId>de.tigges</groupId>
     <artifactId>event-management</artifactId>
-    <version>1.1.0</version>
+    <version>1.1.1</version>
     <name>event-management</name>
     <description>Backend for Event Management System</description>
     <properties>
@@ -57,6 +57,11 @@
         <dependency>
             <groupId>org.flywaydb</groupId>
             <artifactId>flyway-core</artifactId>
+            <version>10.20.0</version>
+        </dependency>
+        <dependency>
+            <groupId>org.flywaydb</groupId>
+            <artifactId>flyway-database-postgresql</artifactId>
         </dependency>
     </dependencies>
 
