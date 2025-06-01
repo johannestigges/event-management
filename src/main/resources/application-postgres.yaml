@@ -1,10 +1,10 @@
 spring:
   datasource:
-    url: "jdbc:postgresql://localhost:5433/dacapo"
+    url: "jdbc:postgresql://localhost:5432/dacapo"
     username: dacapo
-    password: knofensa
+    password: geheim
 flyway:
-  url: "jdbc:postgresql://localhost:5433/dacapo"
-  schemas: dacapo
+  url: "jdbc:postgresql://localhost:5432/dacapo"
+  schemas: public
   user: dacapo
-  password: knofensa
+  password: geheim

@@ -1,6 +1,6 @@
-spring: 
+spring:
   datasource:
-    url: jdbc:h2:file:./eventmanagement.db
+    url: jdbc:h2:file:./eventmanagement.db;MODE=PostgreSQL;DATABASE_TO_LOWER=TRUE;CASE_INSENSITIVE_IDENTIFIERS=TRUE;
     driverClassName: org.h2.Driver
     username: sa
     password: sa
@@ -9,7 +9,7 @@ spring:
       enabled: true
 
 flyway:
-  url: jdbc:h2:file:./eventmanagement.db
-  schemas: PUBLIC
+  url: jdbc:h2:file:./eventmanagement.db;MODE=PostgreSQL;DATABASE_TO_LOWER=TRUE;CASE_INSENSITIVE_IDENTIFIERS=TRUE;INIT=CREATE SCHEMA IF NOT EXISTS PUBLIC;
+  schemas: public
   user: sa
   password: sa

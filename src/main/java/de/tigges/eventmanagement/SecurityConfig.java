@@ -10,10 +10,7 @@ import org.springframework.context.annotation.Configuration;
 import org.springframework.http.HttpStatus;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.config.annotation.web.configuration.EnableWebSecurity;
-import org.springframework.security.config.annotation.web.configurers.AbstractHttpConfigurer;
-import org.springframework.security.config.annotation.web.configurers.AuthorizeHttpRequestsConfigurer;
-import org.springframework.security.config.annotation.web.configurers.FormLoginConfigurer;
-import org.springframework.security.config.annotation.web.configurers.RememberMeConfigurer;
+import org.springframework.security.config.annotation.web.configurers.*;
 import org.springframework.security.core.AuthenticationException;
 import org.springframework.security.core.userdetails.User;
 import org.springframework.security.core.userdetails.UserDetails;
@@ -41,16 +38,20 @@ public class SecurityConfig {
 
     private static void requestConfig(AuthorizeHttpRequestsConfigurer<HttpSecurity>.AuthorizationManagerRequestMatcherRegistry requests) {
         requests
+                .requestMatchers(new AntPathRequestMatcher("/rest/authentication/me")).permitAll()
                 .requestMatchers(new AntPathRequestMatcher("/rest/**")).authenticated()
                 .anyRequest().permitAll();
     }
 
     private static void formLoginConfiguration(FormLoginConfigurer<HttpSecurity> formLogin) {
         formLogin
-                .loginPage("/#/login")
-                .loginProcessingUrl("/login")
-                .defaultSuccessUrl("/")
-                .failureHandler(new AppAuthenticationFailureHandler());
+                .loginPage("/#/anmelden")
+                .loginProcessingUrl("/rest/login")
+                .successForwardUrl("/")
+                .successHandler((request, response, authentication)
+                        -> response.setStatus(HttpServletResponse.SC_OK))
+                .failureHandler(new AppAuthenticationFailureHandler())
+        ;
     }
 
     private static UserDetails map(UserData user) {
@@ -61,13 +62,23 @@ public class SecurityConfig {
                 .build();
     }
 
+    private static void logoutConfiguration(LogoutConfigurer<HttpSecurity> logout) {
+        logout
+                .logoutUrl("/rest/logout")
+                .logoutSuccessHandler((request, response, authentication)
+                        -> response.setStatus(HttpServletResponse.SC_OK))
+                .logoutSuccessUrl("/");
+    }
+
     private static int toSeconds(Duration duration) {
         return Long.valueOf(duration.getSeconds()).intValue();
     }
 
     @Bean
     public SecurityFilterChain filterChain(HttpSecurity http) throws Exception {
-        return http.formLogin(SecurityConfig::formLoginConfiguration)
+        return http
+                .formLogin(SecurityConfig::formLoginConfiguration)
+                .logout(SecurityConfig::logoutConfiguration)
                 .authorizeHttpRequests(SecurityConfig::requestConfig)
                 .csrf(AbstractHttpConfigurer::disable)
                 .rememberMe(this::rememberMeConfiguration)
