@@ -18,7 +18,6 @@ import org.springframework.security.core.userdetails.UserDetailsService;
 import org.springframework.security.provisioning.InMemoryUserDetailsManager;
 import org.springframework.security.web.SecurityFilterChain;
 import org.springframework.security.web.authentication.AuthenticationFailureHandler;
-import org.springframework.security.web.util.matcher.AntPathRequestMatcher;
 
 import java.time.Duration;
 import java.util.Arrays;
@@ -38,8 +37,8 @@ public class SecurityConfig {
 
     private static void requestConfig(AuthorizeHttpRequestsConfigurer<HttpSecurity>.AuthorizationManagerRequestMatcherRegistry requests) {
         requests
-                .requestMatchers(new AntPathRequestMatcher("/rest/authentication/me")).permitAll()
-                .requestMatchers(new AntPathRequestMatcher("/rest/**")).authenticated()
+                .requestMatchers("/rest/authentication/me").permitAll()
+                .requestMatchers("/rest/**").authenticated()
                 .anyRequest().permitAll();
     }
 
