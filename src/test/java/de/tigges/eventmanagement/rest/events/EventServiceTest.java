@@ -35,7 +35,7 @@ class EventServiceTest {
         var events = eventService.getAll();
 
         assertThat(events).hasSize(2);
-        assertEvent(events.getFirst(), 1L, 1L, 2L);
+        assertEvent(events.get(0), 1L, 1L, 2L);
         assertEvent(events.get(1), 2L, 1L, 2L);
     }
 
