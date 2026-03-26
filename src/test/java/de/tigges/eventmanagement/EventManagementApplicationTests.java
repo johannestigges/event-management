@@ -8,8 +8,8 @@ import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMockMvc;
 import org.springframework.boot.test.context.SpringBootTest;
+import org.springframework.boot.webmvc.test.autoconfigure.AutoConfigureMockMvc;
 import org.springframework.security.test.context.support.WithMockUser;
 import org.springframework.test.web.servlet.MockMvc;
 
@@ -23,12 +23,25 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 @AutoConfigureMockMvc
 class EvRentManagementApplicationTests {
     @Autowired
-    private MockMvc mvc;
-
-    @Autowired
     UserRepository userRepository;
-
+    @Autowired
+    private MockMvc mvc;
     private User user;
+
+    private static User createUser() {
+        return new User(
+                100L,
+                1L,
+                "Hans",
+                "Dampf",
+                UserStatus.Gast,
+                createInstrument()
+        );
+    }
+
+    private static Instrument createInstrument() {
+        return new Instrument(1L, "Violine", "Streicher");
+    }
 
     @BeforeEach
     void addUser() {
@@ -73,20 +86,5 @@ class EvRentManagementApplicationTests {
         mvc.perform(get("/rest/users/" + user.id()))
                 .andExpect(status().isOk()
                 );
-    }
-
-    private static User createUser() {
-        return new User(
-                100L,
-                1L,
-                "Hans",
-                "Dampf",
-                UserStatus.Gast,
-                createInstrument()
-        );
-    }
-
-    private static Instrument createInstrument() {
-        return new Instrument(1L, "Violine", "Streicher");
     }
 }
