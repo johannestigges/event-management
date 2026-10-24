@@ -1,9 +1,8 @@
 package de.tigges.eventmanagement.rest.protocol;
 
-import com.fasterxml.jackson.core.JsonProcessingException;
 import lombok.RequiredArgsConstructor;
-import org.springframework.http.converter.json.Jackson2ObjectMapperBuilder;
 import org.springframework.stereotype.Service;
+import tools.jackson.databind.json.JsonMapper;
 
 import java.time.LocalDateTime;
 
@@ -46,13 +45,8 @@ public class ProtocolService {
     }
 
     private String deserialize(Object data) {
-        if (data == null) {
-            return null;
-        }
-        try {
-            return Jackson2ObjectMapperBuilder.json().build().writeValueAsString(data);
-        } catch (JsonProcessingException e) {
-            throw new RuntimeException(e);
-        }
+        return data == null
+                ? null
+                : new JsonMapper().writeValueAsString(data);
     }
 }
