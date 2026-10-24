@@ -4,6 +4,7 @@ import de.tigges.eventmanagement.UsersData.UserData;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import lombok.RequiredArgsConstructor;
+import org.jspecify.annotations.NonNull;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
@@ -74,7 +75,7 @@ public class SecurityConfig {
     }
 
     @Bean
-    public SecurityFilterChain filterChain(HttpSecurity http) throws Exception {
+    public SecurityFilterChain filterChain(HttpSecurity http) {
         return http
                 .formLogin(SecurityConfig::formLoginConfiguration)
                 .logout(SecurityConfig::logoutConfiguration)
@@ -102,9 +103,9 @@ public class SecurityConfig {
     private static class AppAuthenticationFailureHandler implements AuthenticationFailureHandler {
         @Override
         public void onAuthenticationFailure(
-                HttpServletRequest request,
+                @NonNull HttpServletRequest request,
                 HttpServletResponse response,
-                AuthenticationException exception) {
+                @NonNull AuthenticationException exception) {
             response.setStatus(HttpStatus.UNAUTHORIZED.value());
         }
     }
