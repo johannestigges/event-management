@@ -1,10 +1,11 @@
 package de.tigges.eventmanagement.rest.users;
 
 import de.tigges.eventmanagement.rest.protocol.Protocollable;
+import org.springframework.data.annotation.Id;
 import org.springframework.data.relational.core.mapping.Table;
 
 @Table(name = "ev_instrument")
-public record Instrument(Long id, String instrument, String gruppe) implements Protocollable {
+public record Instrument(@Id Long id, String instrument, String gruppe) implements Protocollable {
     @Override
     public String protocolName() {
         return "Instrument";

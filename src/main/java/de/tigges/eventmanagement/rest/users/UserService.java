@@ -7,6 +7,8 @@ import org.springframework.dao.EmptyResultDataAccessException;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
+import java.util.function.Function;
+import java.util.stream.Collectors;
 
 @RestController
 @RequestMapping("/rest/users")
@@ -20,7 +22,11 @@ public class UserService {
 
     @GetMapping("")
     public List<User> getAll() {
-        return userRepository.selectAllWithInstruments();
+        var instruments = instrumentRepository.findAllByOrderByIdAsc().stream()
+                .collect(Collectors.toMap(Instrument::id, Function.identity()));
+        return userRepository.findAllByOrderByInstrumentIdAsc().stream()
+                .map(user -> user.withInstrument(instruments.get(user.instrumentId())))
+                .toList();
     }
 
     @GetMapping("/instruments")
@@ -31,7 +37,8 @@ public class UserService {
 
     @GetMapping("/{id}")
     public User getOne(@PathVariable Long id) {
-        return userRepository.findUserWithInstrument(id)
+        return userRepository.findById(id)
+                .map(this::addInstrument)
                 .orElseThrow(() -> new EmptyResultDataAccessException(
                         "User with id %s not found".formatted(id), 1));
     }
@@ -39,13 +46,15 @@ public class UserService {
     @PostMapping("")
     @ResponseBody
     public User create(@RequestBody User user) {
-        return protocolService.newEntity(userRepository.insert(user));
+        var saved = userRepository.insert(toEntity(user.asNew()));
+        return protocolService.newEntity(addInstrument(saved));
     }
 
     @PutMapping("/{id}")
     @ResponseBody
     public User update(@RequestBody User user, @PathVariable Long id) {
-        return protocolService.modifiedEntity(userRepository.update(user));
+        var saved = userRepository.update(toEntity(user));
+        return protocolService.modifiedEntity(addInstrument(saved));
     }
 
     @DeleteMapping("/{id}")
@@ -53,5 +62,20 @@ public class UserService {
         participantRepository.removeFromUser(id);
         userRepository.deleteById(id);
         protocolService.deletedEntity(id, "User");
+    }
+
+    private User toEntity(User user) {
+        return user.instrument() == null
+                ? user.withInstrumentId(null)
+                : user.withInstrumentId(user.instrument().id());
+    }
+
+    private User addInstrument(User user) {
+        if (user.instrumentId() == null) {
+            return user;
+        }
+        return instrumentRepository.findById(user.instrumentId())
+                .map(user::withInstrument)
+                .orElse(user);
     }
 }
